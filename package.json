@@ -1,7 +1,7 @@
 {
-  "name": "@feathersjs/authentication-local",
-  "description": "Local authentication strategy for @feathers/authentication",
-  "version": "1.2.5",
+  "name": "@mohitmayank/authentication-http-basic",
+  "description": "Http Basic authentication strategy for @feathers/authentication",
+  "version": "1.0.0",
   "homepage": "https://feathersjs.com",
   "main": "lib/",
   "keywords": [
@@ -11,17 +11,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/feathersjs/feathers.git"
+    "url": "git://github.com:mohitmayank/feathers-authentication-http-basic.git"
   },
   "author": {
-    "name": "Feathers contributors",
-    "email": "hello@feathersjs.com",
-    "url": "https://feathersjs.com"
+    "name": "Mohit Jain"
   },
   "contributors": [],
-  "bugs": {
-    "url": "https://github.com/feathersjs/feathers/issues"
-  },
   "engines": {
     "node": ">= 6"
   },
@@ -39,6 +34,7 @@
     "bcryptjs": "^2.3.0",
     "debug": "^4.0.0",
     "lodash": "^4.17.5",
+    "passport-http": "^0.3.0",
     "passport-local": "^1.0.0"
   },
   "devDependencies": {

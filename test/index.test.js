@@ -6,34 +6,34 @@ const memory = require('feathers-memory');
 const chai = require('chai');
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
-const passportLocal = require('passport-local');
-const local = require('../lib');
+const passportHttp = require('passport-http');
+const basic = require('../lib');
 
-const { Verifier } = local;
+const { Verifier } = basic;
 const { expect } = chai;
 
 chai.use(sinonChai);
 
-describe('@feathersjs/authentication-local', () => {
+describe('@feathersjs/authentication-http-basic', () => {
   it('is CommonJS compatible', () => {
     expect(typeof require('../lib')).to.equal('function');
   });
 
   it('basic functionality', () => {
-    expect(typeof local).to.equal('function');
+    expect(typeof basic).to.equal('function');
   });
 
   it('exposes default', () => {
-    expect(local.default).to.equal(local);
+    expect(basic.default).to.equal(basic);
   });
 
   it('exposes hooks', () => {
-    expect(typeof local.hooks).to.equal('object');
+    expect(typeof basic.hooks).to.equal('object');
   });
 
   it('exposes the Verifier class', () => {
     expect(typeof Verifier).to.equal('function');
-    expect(typeof local.Verifier).to.equal('function');
+    expect(typeof basic.Verifier).to.equal('function');
   });
 
   describe('initialization', () => {
@@ -47,26 +47,26 @@ describe('@feathersjs/authentication-local', () => {
 
     it('throws an error if passport has not been registered', () => {
       expect(() => {
-        expressify(feathers()).configure(local());
+        expressify(feathers()).configure(basic());
       }).to.throw();
     });
 
-    it('registers the local passport strategy', () => {
+    it('registers the http basic passport strategy', () => {
       sinon.spy(app.passport, 'use');
-      sinon.spy(passportLocal, 'Strategy');
-      app.configure(local());
+      sinon.spy(passportHttp, 'BasicStrategy');
+      app.configure(basic());
       app.setup();
 
-      expect(passportLocal.Strategy).to.have.been.calledOnce;
-      expect(app.passport.use).to.have.been.calledWith('local');
+      expect(passportHttp.BasicStrategy).to.have.been.calledOnce;
+      expect(app.passport.use).to.have.been.calledWith('http-basic');
 
       app.passport.use.restore();
-      passportLocal.Strategy.restore();
+      passportHttp.BasicStrategy.restore();
     });
 
     it('registers the strategy options', () => {
       sinon.spy(app.passport, 'options');
-      app.configure(local());
+      app.configure(basic());
       app.setup();
 
       expect(app.passport.options).to.have.been.calledOnce;
@@ -79,15 +79,15 @@ describe('@feathersjs/authentication-local', () => {
       let args;
 
       beforeEach(() => {
-        sinon.spy(passportLocal, 'Strategy');
-        app.configure(local({ custom: true }));
+        sinon.spy(passportHttp, 'BasicStrategy');
+        app.configure(basic({ custom: true }));
         app.setup();
         authOptions = app.get('authentication');
-        args = passportLocal.Strategy.getCall(0).args[0];
+        args = passportHttp.BasicStrategy.getCall(0).args[0];
       });
 
       afterEach(() => {
-        passportLocal.Strategy.restore();
+        passportHttp.BasicStrategy.restore();
       });
 
       it('sets usernameField', () => {
@@ -120,43 +120,43 @@ describe('@feathersjs/authentication-local', () => {
     });
 
     it('supports overriding default options', () => {
-      sinon.spy(passportLocal, 'Strategy');
-      app.configure(local({ usernameField: 'username' }));
+      sinon.spy(passportHttp, 'BasicStrategy');
+      app.configure(basic({ usernameField: 'username' }));
       app.setup();
 
-      expect(passportLocal.Strategy.getCall(0).args[0].usernameField).to.equal('username');
+      expect(passportHttp.BasicStrategy.getCall(0).args[0].usernameField).to.equal('username');
 
-      passportLocal.Strategy.restore();
+      passportHttp.BasicStrategy.restore();
     });
 
     it('pulls options from global config', () => {
-      sinon.spy(passportLocal, 'Strategy');
+      sinon.spy(passportHttp, 'BasicStrategy');
       let authOptions = app.get('authentication');
-      authOptions.local = { usernameField: 'username' };
+      authOptions['http-basic'] = { usernameField: 'username' };
       app.set('authentication', authOptions);
 
-      app.configure(local());
+      app.configure(basic());
       app.setup();
 
-      expect(passportLocal.Strategy.getCall(0).args[0].usernameField).to.equal('username');
-      expect(passportLocal.Strategy.getCall(0).args[0].passwordField).to.equal('password');
+      expect(passportHttp.BasicStrategy.getCall(0).args[0].usernameField).to.equal('username');
+      expect(passportHttp.BasicStrategy.getCall(0).args[0].passwordField).to.equal('password');
 
-      passportLocal.Strategy.restore();
+      passportHttp.BasicStrategy.restore();
     });
 
     it('pulls options from global config with custom name', () => {
-      sinon.spy(passportLocal, 'Strategy');
+      sinon.spy(passportHttp, 'BasicStrategy');
       let authOptions = app.get('authentication');
       authOptions.custom = { usernameField: 'username' };
       app.set('authentication', authOptions);
 
-      app.configure(local({ name: 'custom' }));
+      app.configure(basic({ name: 'custom' }));
       app.setup();
 
-      expect(passportLocal.Strategy.getCall(0).args[0].usernameField).to.equal('username');
-      expect(passportLocal.Strategy.getCall(0).args[0].passwordField).to.equal('password');
+      expect(passportHttp.BasicStrategy.getCall(0).args[0].usernameField).to.equal('username');
+      expect(passportHttp.BasicStrategy.getCall(0).args[0].passwordField).to.equal('password');
 
-      passportLocal.Strategy.restore();
+      passportHttp.BasicStrategy.restore();
     });
 
     describe('custom Verifier', () => {
@@ -167,7 +167,7 @@ describe('@feathersjs/authentication-local', () => {
               this.app = app;
             }
           }
-          app.configure(local({ Verifier: CustomVerifier }));
+          app.configure(basic({ Verifier: CustomVerifier }));
           app.setup();
         }).to.throw();
       });
@@ -181,7 +181,9 @@ describe('@feathersjs/authentication-local', () => {
         const req = {
           query: {},
           body: Object.assign({}, User),
-          headers: {},
+          headers: {
+            authorization : "Basic " + new Buffer(User.email + ":" + User.password).toString("base64")
+          },
           cookies: {}
         };
         class CustomVerifier extends Verifier {
@@ -192,10 +194,10 @@ describe('@feathersjs/authentication-local', () => {
           }
         }
 
-        app.configure(local({ Verifier: CustomVerifier }));
+        app.configure(basic({ Verifier: CustomVerifier }));
         app.setup();
 
-        return app.authenticate('local')(req).then(result => {
+        return app.authenticate('http-basic')(req).then(result => {
           expect(result.data.user).to.deep.equal(User);
         });
       });

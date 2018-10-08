@@ -3,7 +3,7 @@ const feathers = require('@feathersjs/feathers');
 const expressify = require('@feathersjs/express');
 const authentication = require('@feathersjs/authentication');
 const memory = require('feathers-memory');
-const local = require('../lib');
+const basic = require('../lib');
 
 const { expect } = require('chai');
 
@@ -17,7 +17,9 @@ describe('integration', () => {
     const req = {
       query: {},
       body: Object.assign({}, User),
-      headers: {},
+      headers: {
+        authorization : "Basic " + new Buffer(User.email + ":" + User.password).toString("base64")
+      },
       cookies: {},
       params: {
         query: {},
@@ -34,7 +36,7 @@ describe('integration', () => {
     let dataReceived;
 
     app.configure(authentication({ secret: 'secret' }))
-      .configure(local())
+      .configure(basic())
       .use('/users', memory());
 
     app.service('users').hooks({
@@ -43,14 +45,14 @@ describe('integration', () => {
           paramsReceived = Object.keys(hook.params);
           dataReceived = hook.params.data;
         },
-        create: local.hooks.hashPassword({ passwordField: 'password' })
+        create: basic.hooks.hashPassword({ passwordField: 'password' })
       }
     });
 
     app.setup();
 
     return app.service('users').create(User).then(() => {
-      return app.authenticate('local')(req).then(result => {
+      return app.authenticate('http-basic')(req).then(result => {
         expect(result.success).to.equal(true);
         expect(result.data.user.email).to.equal(User.email);
         expect(result.data.user.password).to.not.equal(undefined);
