@@ -1,15 +1,11 @@
-# @feathersjs/authentication-local
+# feathers-authentication-http-basic
 
-[![Build Status](https://travis-ci.org/feathersjs/feathers.png?branch=master)](https://travis-ci.org/feathersjs/feathers)
-[![Dependency Status](https://img.shields.io/david/feathersjs/feathers.svg?style=flat-square&path=packages/authentication-local)](https://david-dm.org/feathersjs/feathers?path=packages/authentication-local)
-[![Download Status](https://img.shields.io/npm/dm/@feathersjs/authentication-local.svg?style=flat-square)](https://www.npmjs.com/package/@feathersjs/authentication-local)
-
-> Local authentication strategy for feathers-authentication using Passport without all the boilerplate.
+> Http Basic authentication strategy for feathers-authentication using Passport without all the boilerplate.
 
 ## Installation
 
 ```
-npm install @feathersjs/authentication-local --save
+yarn add feathers-authentication-http-basic
 ```
 
 ## Quick example
@@ -17,27 +13,23 @@ npm install @feathersjs/authentication-local --save
 ```js
 const feathers = require('@feathersjs/feathers');
 const authentication = require('feathers-authentication');
-const local = require('@feathersjs/authentication-local');
+const httpBasic = require('feathers-authentication-http-basic');
 const app = feathers();
 
 // Setup authentication
 app.configure(authentication(settings));
-app.configure(local());
+app.configure(httpBasic());
 
 // Setup a hook to only allow valid JWTs or successful 
-// local auth to authenticate and get new JWT access tokens
+// basic auth to authenticate and get new JWT access tokens
 app.service('authentication').hooks({
   before: {
     create: [
-      authentication.hooks.authenticate(['local', 'jwt'])
+      authentication.hooks.authenticate(['http-basic', 'jwt'])
     ]
   }
 });
 ```
-
-## Documentation
-
-Please refer to the [@feathersjs/authentication-local API documentation](https://docs.feathersjs.com/api/authentication/local.html) for more details.
 
 ## License
 
